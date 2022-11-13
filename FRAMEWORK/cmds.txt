@@ -1,0 +1,30 @@
+# Training
+python model_main_tf2.py \
+     --pipeline_config_path=training/ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8.config \
+     --model_dir=training \
+     --alsologtostderr
+
+# Generate records
+python generate_tfrecord.py  --csv_input=images/train_labels.csv --image_dir=images/train --output_path=train.record
+python generate_tfrecord.py  --csv_input=images/test_labels.csv --image_dir=images/test --output_path=test.record
+
+# Eval
+python model_main_tf2.py \
+     --pipeline_config_path=training/ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8.config \
+     --model_dir=training \
+     --checkpoint_dir=training \
+     --alsologtostderr
+
+# Tensorboard, choose train or eval below
+tensorboard --logdir=[train/eval]
+
+python export_tflite_graph_tf2.py \
+    --pipeline_config_path /home/minh/Desktop/LED-MODELS/ssd_v2_320/training/ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8.config \
+    --trained_checkpoint_dir /home/minh/Desktop/LED-MODELS/ssd_v2_320/training \
+    --output_directory /home/minh/Desktop/LED-MODELS/ssd_v2_320
+
+# tflite_convert is module installed alongside tensorflow2 in cmds
+tflite_convert \
+  --saved_model_dir=/home/minh/Desktop/LED-MODELS/ssd_v2_320/saved_model/ \
+  --output_file=mobilenet.tflite
+
